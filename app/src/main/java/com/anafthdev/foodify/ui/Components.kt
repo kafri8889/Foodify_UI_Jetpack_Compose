@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -307,7 +309,7 @@ fun FoodMenu(
 				.padding(16.dp)
 		) {
 			Image(
-				painter = painterResource(id = food.icon),
+				painter = painterResource(id = food.image),
 				contentDescription = null,
 				modifier = Modifier
 					.fillMaxWidth()
@@ -459,7 +461,7 @@ fun ToppingMenu(
 	}
 }
 
-@Preview
+//@Preview
 @Composable
 fun ToppingMenuPreview() {
 	Column {
@@ -475,4 +477,186 @@ fun ToppingMenuPreview() {
 			onClick = {}
 		)
 	}
+}
+
+
+
+
+
+@OptIn(
+	ExperimentalMaterialApi::class,
+	ExperimentalUnitApi::class
+)
+@Composable
+fun FoodCartItem(
+	food: Food,
+	onPriceChange: (Double) -> Unit
+) {
+	
+	var count by remember { mutableStateOf(1) }
+	
+	var currentPrice by remember { mutableStateOf(food.price) }
+	
+	Card(
+		elevation = 0.4f.dp,
+		shape = RoundedCornerShape(30),
+		backgroundColor = white,
+		onClick = {},
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(16.dp)
+	) {
+		Box(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 16.dp)
+		) {
+			
+			Card(
+				elevation = 0.2f.dp,
+				shape = RoundedCornerShape(30),
+				modifier = Modifier
+					.size(64.dp)
+					.padding(8.dp)
+					.align(Alignment.CenterStart)
+			) {
+				Box(
+					contentAlignment = Alignment.Center,
+					modifier = Modifier
+						.fillMaxSize()
+				) {
+					Image(
+						painter = painterResource(id = food.image),
+						contentDescription = null,
+						modifier = Modifier
+							.size(32.dp)
+					)
+				}
+			}
+			
+			
+			
+			Column(
+				modifier = Modifier
+					.align(Alignment.Center)
+			) {
+				Text(
+					text = food.name,
+					maxLines = 1,
+					overflow = TextOverflow.Ellipsis,
+					style = typographyDmSans().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontWeight = FontWeight.SemiBold,
+						fontSize = TextUnit(16f, TextUnitType.Sp)
+					)
+				)
+				
+				Text(
+					text = food.type,
+					overflow = TextOverflow.Ellipsis,
+					style = typographyDmSans().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontWeight = FontWeight.Normal,
+						fontSize = TextUnit(12f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.padding(top = 2.dp, bottom = 2.dp)
+				)
+				
+				Text(
+					text = run {
+						if (currentPrice.toString().length > 6) {
+							"$${currentPrice.toString().substring(0, 6)}"
+						} else "$$currentPrice"
+					},
+					overflow = TextOverflow.Ellipsis,
+					style = typographyDmSans().body1.copy(
+						color = orange.copy(alpha = 0.8f),
+						fontWeight = FontWeight.SemiBold,
+						fontSize = TextUnit(16f, TextUnitType.Sp)
+					)
+				)
+			}
+			
+			
+			
+			Row(
+				verticalAlignment = Alignment.CenterVertically,
+				modifier = Modifier
+					.align(Alignment.CenterEnd)
+			) {
+				
+				FloatingActionButton(
+					shape = RoundedCornerShape(100),
+					backgroundColor = orange.copy(alpha = 0.8f),
+					elevation = FloatingActionButtonDefaults.elevation(
+						defaultElevation = 0.dp
+					),
+					onClick = {
+						if (count > 1) {
+							count -= 1
+							currentPrice = food.price * count
+							onPriceChange(currentPrice)
+						}
+					},
+					modifier = Modifier
+						.size(24.dp)
+				) {
+					Icon(
+						painter = painterResource(id = R.drawable.ic_horizontal_rule_rounded),
+						contentDescription = null,
+						tint = white,
+						modifier = Modifier
+							.size(16.dp)
+					)
+				}
+				
+				Text(
+					text = count.toString(),
+					style = typographyDmSans().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontWeight = FontWeight.SemiBold,
+						fontSize = TextUnit(16f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.padding(start = 8.dp, end = 8.dp)
+				)
+				
+				FloatingActionButton(
+					shape = RoundedCornerShape(100),
+					backgroundColor = orange.copy(alpha = 0.8f),
+					elevation = FloatingActionButtonDefaults.elevation(
+						defaultElevation = 0.dp
+					),
+					onClick = {
+						count += 1
+						currentPrice = food.price * count
+						onPriceChange(currentPrice)
+					},
+					modifier = Modifier
+						.size(24.dp)
+				) {
+					Icon(
+						imageVector = Icons.Rounded.Add,
+						contentDescription = null,
+						tint = white,
+						modifier = Modifier
+							.size(16.dp)
+					)
+				}
+			}
+			
+			
+			
+		}
+	}
+}
+
+@Preview
+@Composable
+fun FoodCartItemPreview() {
+	FoodCartItem(
+		food = Food.sample,
+		onPriceChange = {}
+	)
 }

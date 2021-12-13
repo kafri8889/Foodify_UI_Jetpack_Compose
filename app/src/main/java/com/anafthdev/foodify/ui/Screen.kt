@@ -2,9 +2,11 @@ package com.anafthdev.foodify.ui
 
 import android.os.Handler
 import android.os.Looper
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.LocalOverScrollConfiguration
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -91,7 +93,9 @@ fun SplashScreen(
 
 @OptIn(ExperimentalUnitApi::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+	navController: NavHostController
+) {
 	
 	val context = LocalContext.current
 	
@@ -99,15 +103,22 @@ fun HomeScreen() {
 	val homeNavController = rememberNavController()
 	
 	val navigationBackStackEntry by homeNavController.currentBackStackEntryAsState()
-	val currentRoute = navigationBackStackEntry?.destination?.route ?: FoodifyDestination.HomeDestination.MAIN_HOME_SCREEN
+	val currentRoute = navigationBackStackEntry?.destination?.route ?: FoodifyDestination.Home.HOME_SCREEN
 	
 	var showHomeBottomBar by remember { mutableStateOf(false) }
 	var selectedBottomNavigationItem by remember { mutableStateOf(FoodifyBottomNavigation.values[0].name) }
 	var showProfileMenuPopup by remember { mutableStateOf(false) }
 	
+	selectedBottomNavigationItem = when(currentRoute) {
+		FoodifyDestination.Home.HOME_SCREEN -> FoodifyBottomNavigation.Companion.Home.name
+		FoodifyDestination.Home.FOOD_CART_SCREEN -> FoodifyBottomNavigation.Companion.ShoppingCart.name
+		else -> selectedBottomNavigationItem
+	}
+	
 	showHomeBottomBar = when (currentRoute) {
-		FoodifyDestination.HomeDestination.MAIN_HOME_SCREEN -> true
-		FoodifyDestination.HomeDestination.FOOD_DETAIL_SCREEN -> false
+		FoodifyDestination.Home.HOME_SCREEN -> true
+		FoodifyDestination.Home.FOOD_DETAIL_SCREEN -> false
+		FoodifyDestination.Home.FOOD_CART_SCREEN -> true
 		else -> true
 	}
 	
@@ -229,6 +240,15 @@ fun HomeScreen() {
 								IconButton(
 									onClick = {
 										selectedBottomNavigationItem = foodifyBottomNavigation.name
+										homeNavController.navigate(
+											when (selectedBottomNavigationItem) {
+												FoodifyBottomNavigation.Companion.Home.name -> FoodifyDestination.Home.HOME_SCREEN
+												FoodifyBottomNavigation.Companion.Favorite.name -> FoodifyDestination.Home.HOME_SCREEN
+												FoodifyBottomNavigation.Companion.Notification.name -> FoodifyDestination.Home.HOME_SCREEN
+												FoodifyBottomNavigation.Companion.ShoppingCart.name -> FoodifyDestination.Home.FOOD_CART_SCREEN
+												else -> FoodifyDestination.Home.HOME_SCREEN
+											}
+										)
 									},
 									modifier = Modifier
 										.weight(
@@ -285,20 +305,30 @@ fun HomeScreen() {
 	) {
 		NavHost(
 			navController = homeNavController,
-			startDestination = FoodifyDestination.HomeDestination.MAIN_HOME_SCREEN
+			startDestination = FoodifyDestination.Home.HOME_SCREEN
 		) {
-			composable(FoodifyDestination.HomeDestination.MAIN_HOME_SCREEN) {
+			composable(
+				route = FoodifyDestination.Home.HOME_SCREEN
+			) {
 				MainHomeScreen(
-					navController = homeNavController
+					homeNavController = homeNavController
 				)
 			}
 			
 			composable(
-				route = FoodifyDestination.HomeDestination.FOOD_DETAIL_SCREEN
+				route = FoodifyDestination.Home.FOOD_DETAIL_SCREEN
 			) {
 				FoodDetailScreen(
 					food = Food.sample,
-					navController = homeNavController
+					homeNavController = homeNavController
+				)
+			}
+			
+			composable(
+				route = FoodifyDestination.Home.FOOD_CART_SCREEN
+			) {
+				FoodCartScreen(
+					navController = navController,
 				)
 			}
 		}
@@ -308,7 +338,7 @@ fun HomeScreen() {
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun MainHomeScreen(
-	navController: NavHostController
+	homeNavController: NavHostController
 ) {
 	
 	val foodCategories = listOf(
@@ -413,8 +443,8 @@ fun MainHomeScreen(
 					FoodMenu(
 						food = food,
 						onClick = {
-							navController.navigate(FoodifyDestination.HomeDestination.FOOD_DETAIL_SCREEN) {
-								popUpTo(FoodifyDestination.HomeDestination.MAIN_HOME_SCREEN) {
+							homeNavController.navigate(FoodifyDestination.Home.FOOD_DETAIL_SCREEN) {
+								popUpTo(FoodifyDestination.Home.HOME_SCREEN) {
 									saveState = false
 								}
 								
@@ -439,7 +469,7 @@ fun MainHomeScreen(
 @Composable
 fun FoodDetailScreen(
 	food: Food,
-	navController: NavHostController
+	homeNavController: NavHostController
 ) {
 	
 	var orderCount by remember { mutableStateOf(0) }
@@ -470,7 +500,7 @@ fun FoodDetailScreen(
 					modifier = Modifier.fillMaxSize()
 				) {
 					Image(
-						painter = painterResource(id = food.icon),
+						painter = painterResource(id = food.image),
 						contentDescription = null,
 						modifier = Modifier
 							.size(160.dp)
@@ -674,8 +704,8 @@ fun FoodDetailScreen(
 						topping = topping,
 						isSelected = selectedTopping.contains(topping),
 						onClick = {
-							if (selectedTopping.contains(topping)) selectedTopping = ArrayList(selectedTopping).apply { remove(topping) }
-							else selectedTopping = ArrayList(selectedTopping).apply { add(topping) }
+							selectedTopping = if (selectedTopping.contains(topping)) ArrayList(selectedTopping).apply { remove(topping) }
+							else ArrayList(selectedTopping).apply { add(topping) }
 						}
 					)
 				}
@@ -693,7 +723,16 @@ fun FoodDetailScreen(
 					Color(0xFFFF774C),
 				)
 			),
-			onClick = {},
+			onClick = {
+				homeNavController.navigate(FoodifyDestination.Home.FOOD_CART_SCREEN) {
+					popUpTo(FoodifyDestination.Home.FOOD_DETAIL_SCREEN) {
+						saveState = false
+					}
+					
+					restoreState = false
+					launchSingleTop = true
+				}
+			},
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(72.dp)
@@ -712,6 +751,176 @@ fun FoodDetailScreen(
 	}
 }
 
+@OptIn(ExperimentalUnitApi::class)
+@Composable
+fun FoodCartScreen(
+	navController: NavHostController
+) {
+	
+	val foods = listOf(
+		Food.sample.copy(),
+		Food.sample.copy(),
+		Food.sample.copy(),
+		Food.sample.copy(),
+	)
+	
+	val totalPrice = remember {
+		mutableStateListOf<Double>().apply {
+			foods.forEach {
+				add(it.price)
+			}
+		}
+	}
+	
+	Column(
+		modifier = Modifier
+			.fillMaxSize()
+	) {
+		
+		Text(
+			text = "Your cart",
+			style = typographyDmSans().body1.copy(
+				color = black.copy(alpha = 0.8f),
+				fontWeight = FontWeight.Bold,
+				fontSize = TextUnit(24f, TextUnitType.Sp)
+			),
+			modifier = Modifier
+				.padding(top = 32.dp, start = 16.dp)
+		)
+		
+		
+		
+		LazyColumn(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 24.dp)
+		) {
+			itemsIndexed(foods) { i, food ->
+				FoodCartItem(
+					food = food,
+					onPriceChange = { price ->
+						totalPrice[i] = price
+					}
+				)
+			}
+			
+			item {
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(top = 32.dp, start = 32.dp, end = 32.dp, bottom = 96.dp)
+				) {
+					Box(
+						modifier = Modifier
+							.fillMaxWidth()
+					) {
+						Text(
+							text = "Total",
+							style = typographySkModernist().body1.copy(
+								color = black.copy(0.8f),
+								fontSize = TextUnit(16f, TextUnitType.Sp)
+							),
+							modifier = Modifier
+								.align(Alignment.CenterStart)
+						)
+						
+						Text(
+							text = run {
+								if (totalPrice.sum().toString().length > 6) {
+									"$${totalPrice.sum().toString().substring(0, 6)}"
+								} else "$${totalPrice.sum()}"
+							},
+							style = typographyDmSans().body1.copy(
+								color = black.copy(0.8f),
+								fontWeight = FontWeight.Bold,
+								fontSize = TextUnit(24f, TextUnitType.Sp)
+							),
+							modifier = Modifier
+								.align(Alignment.CenterEnd)
+						)
+					}
+					
+					
+					
+					GradientButton(
+						shape = RoundedCornerShape(18.dp),
+						contentPadding = PaddingValues(),
+						brush = Brush.horizontalGradient(
+							colors = listOf(
+								Color(0xFFF9881F),
+								Color(0xFFFF774C),
+							)
+						),
+						onClick = {
+							navController.navigate(FoodifyDestination.PAYMENT_SCREEN) {
+								popUpTo(0)
+							}
+						},
+						modifier = Modifier
+							.fillMaxWidth()
+							.height(72.dp)
+							.padding(top = 24.dp)
+					) {
+						Text(
+							text = "Process to payment",
+							style = typographySkModernist().body1.copy(
+								color = white,
+								fontSize = TextUnit(14f, TextUnitType.Sp),
+								fontWeight = FontWeight.Bold
+							)
+						)
+					}  // Process to payment button
+				}
+			}
+		}  // LazyColumn
+		
+		
+		
+	}
+}
+
+
+
+
+
+@Composable
+fun PaymentScreen(
+	navController: NavHostController
+) {
+	
+	val paymentNavController = rememberNavController()
+	
+	BackHandler {
+		navController.navigate(FoodifyDestination.HOME_SCREEN) {
+			popUpTo(0)
+		}
+	}
+	
+	Scaffold(
+		topBar = {
+		
+		}
+	) {
+		NavHost(
+			navController = paymentNavController,
+			startDestination = FoodifyDestination.Payment.PAYMENT_SCREEN
+		) {
+			composable(FoodifyDestination.Payment.PAYMENT_SCREEN) {
+				MainPaymentScreen(
+					paymentNavController = paymentNavController
+				)
+			}
+		}
+	}
+}
+
+@Composable
+fun MainPaymentScreen(
+	paymentNavController: NavHostController
+) {
+
+}
+
 
 
 
@@ -725,7 +934,7 @@ fun WelcomeScreen(
 	val welcomeScreenNavController = rememberNavController()
 	
 	val navigationBackStackEntry by welcomeScreenNavController.currentBackStackEntryAsState()
-	val currentRoute = navigationBackStackEntry?.destination?.route ?: FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN
+	val currentRoute = navigationBackStackEntry?.destination?.route ?: FoodifyDestination.Welcome.WELCOME_SCREEN
 	
 	Scaffold(
 		topBar = {
@@ -749,15 +958,15 @@ fun WelcomeScreen(
 					indication = rememberRipple(color = background),
 					onClick = {
 						if (
-							(currentRoute != FoodifyDestination.WelcomeDestination.FORGOT_PASSWORD_SCREEN) and
-							(currentRoute != FoodifyDestination.WelcomeDestination.RESET_PASSWORD_SCREEN)
+							(currentRoute != FoodifyDestination.Welcome.FORGOT_PASSWORD_SCREEN) and
+							(currentRoute != FoodifyDestination.Welcome.RESET_PASSWORD_SCREEN)
 						) {
 							navController.navigate(FoodifyDestination.HOME_SCREEN) {
 								popUpTo(0)
 							}
 						} else {
-							welcomeScreenNavController.navigate(FoodifyDestination.WelcomeDestination.SIGN_IN_SCREEN) {
-								popUpTo(FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN)
+							welcomeScreenNavController.navigate(FoodifyDestination.Welcome.SIGN_IN_SCREEN) {
+								popUpTo(FoodifyDestination.Welcome.WELCOME_SCREEN)
 							}
 						}
 					},
@@ -766,11 +975,11 @@ fun WelcomeScreen(
 				) {
 					Text(
 						text = when (currentRoute) {
-							FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN -> "Skip"
-							FoodifyDestination.WelcomeDestination.SIGN_UP_SCREEN -> "Skip"
-							FoodifyDestination.WelcomeDestination.SIGN_IN_SCREEN -> "Skip"
-							FoodifyDestination.WelcomeDestination.FORGOT_PASSWORD_SCREEN -> "Cancel"
-							FoodifyDestination.WelcomeDestination.RESET_PASSWORD_SCREEN -> "Cancel"
+							FoodifyDestination.Welcome.WELCOME_SCREEN -> "Skip"
+							FoodifyDestination.Welcome.SIGN_UP_SCREEN -> "Skip"
+							FoodifyDestination.Welcome.SIGN_IN_SCREEN -> "Skip"
+							FoodifyDestination.Welcome.FORGOT_PASSWORD_SCREEN -> "Cancel"
+							FoodifyDestination.Welcome.RESET_PASSWORD_SCREEN -> "Cancel"
 							else -> "Skip"
 						},
 						style = typographySkModernist().body1.copy(
@@ -784,36 +993,36 @@ fun WelcomeScreen(
 	) {
 		NavHost(
 			navController = welcomeScreenNavController,
-			startDestination = FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN
+			startDestination = FoodifyDestination.Welcome.WELCOME_SCREEN
 		) {
-			composable(FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN) {
+			composable(FoodifyDestination.Welcome.WELCOME_SCREEN) {
 				MainWelcomeScreen(
-					navController = welcomeScreenNavController
+					welcomeNavController = welcomeScreenNavController
 				)
 			}
 			
-			composable(FoodifyDestination.WelcomeDestination.SIGN_UP_SCREEN) {
+			composable(FoodifyDestination.Welcome.SIGN_UP_SCREEN) {
 				SignUpScreen(
-					navController = welcomeScreenNavController
+					welcomeNavController = welcomeScreenNavController
 				)
 			}
 			
-			composable(FoodifyDestination.WelcomeDestination.SIGN_IN_SCREEN) {
+			composable(FoodifyDestination.Welcome.SIGN_IN_SCREEN) {
 				SignInScreen(
 					navController = navController,
-					welcomeScreenNavController = welcomeScreenNavController
+					welcomeNavController = welcomeScreenNavController
 				)
 			}
 			
-			composable(FoodifyDestination.WelcomeDestination.FORGOT_PASSWORD_SCREEN) {
+			composable(FoodifyDestination.Welcome.FORGOT_PASSWORD_SCREEN) {
 				ForgotPasswordScreen(
-					navController = welcomeScreenNavController,
+					welcomeNavController = welcomeScreenNavController,
 				)
 			}
 			
-			composable(FoodifyDestination.WelcomeDestination.RESET_PASSWORD_SCREEN) {
+			composable(FoodifyDestination.Welcome.RESET_PASSWORD_SCREEN) {
 				ResetPasswordScreen(
-					navController = welcomeScreenNavController
+					welcomeNavController = welcomeScreenNavController
 				)
 			}
 		}
@@ -827,7 +1036,7 @@ fun WelcomeScreen(
 )
 @Composable
 fun MainWelcomeScreen(
-	navController: NavHostController
+	welcomeNavController: NavHostController
 ) {
 	
 	val pagerState = rememberPagerState()
@@ -894,8 +1103,8 @@ fun MainWelcomeScreen(
 				)
 			),
 			onClick = {
-				navController.navigate(FoodifyDestination.WelcomeDestination.SIGN_UP_SCREEN) {
-					popUpTo(FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN) {
+				welcomeNavController.navigate(FoodifyDestination.Welcome.SIGN_UP_SCREEN) {
+					popUpTo(FoodifyDestination.Welcome.WELCOME_SCREEN) {
 						saveState = false
 					}
 					
@@ -921,8 +1130,8 @@ fun MainWelcomeScreen(
 		TransparentButton(
 			indication = rememberRipple(color = background),
 			onClick = {
-				navController.navigate(FoodifyDestination.WelcomeDestination.SIGN_IN_SCREEN) {
-					popUpTo(FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN) {
+				welcomeNavController.navigate(FoodifyDestination.Welcome.SIGN_IN_SCREEN) {
+					popUpTo(FoodifyDestination.Welcome.WELCOME_SCREEN) {
 						saveState = false
 					}
 					
@@ -950,7 +1159,7 @@ fun MainWelcomeScreen(
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun SignUpScreen(
-	navController: NavHostController
+	welcomeNavController: NavHostController
 ) {
 	var passwordVisibility by remember { mutableStateOf(false) }
 	var confirmPasswordVisibility by remember { mutableStateOf(false) }
@@ -1138,7 +1347,7 @@ fun SignUpScreen(
 					)
 				),
 				onClick = {
-					navController.navigate(FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN) {
+					welcomeNavController.navigate(FoodifyDestination.Welcome.WELCOME_SCREEN) {
 						popUpTo(0)
 					}
 				},
@@ -1163,8 +1372,8 @@ fun SignUpScreen(
 			TransparentButton(
 				indication = rememberRipple(color = background),
 				onClick = {
-					navController.navigate(FoodifyDestination.WelcomeDestination.SIGN_IN_SCREEN) {
-						popUpTo(FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN) {
+					welcomeNavController.navigate(FoodifyDestination.Welcome.SIGN_IN_SCREEN) {
+						popUpTo(FoodifyDestination.Welcome.WELCOME_SCREEN) {
 							saveState = false
 						}
 						
@@ -1199,7 +1408,7 @@ fun SignUpScreen(
 @Composable
 fun SignInScreen(
 	navController: NavHostController,
-	welcomeScreenNavController: NavHostController,
+	welcomeNavController: NavHostController,
 ) {
 	
 	var email by remember { mutableStateOf("") }
@@ -1302,8 +1511,8 @@ fun SignInScreen(
 			TransparentButton(
 				indication = rememberRipple(color = background),
 				onClick = {
-					welcomeScreenNavController.navigate(FoodifyDestination.WelcomeDestination.FORGOT_PASSWORD_SCREEN) {
-						popUpTo(FoodifyDestination.WelcomeDestination.SIGN_IN_SCREEN) {
+					welcomeNavController.navigate(FoodifyDestination.Welcome.FORGOT_PASSWORD_SCREEN) {
+						popUpTo(FoodifyDestination.Welcome.SIGN_IN_SCREEN) {
 							saveState = false
 						}
 						
@@ -1375,8 +1584,8 @@ fun SignInScreen(
 					)
 				),
 				onClick = {
-					welcomeScreenNavController.navigate(FoodifyDestination.WelcomeDestination.SIGN_UP_SCREEN) {
-						popUpTo(FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN) {
+					welcomeNavController.navigate(FoodifyDestination.Welcome.SIGN_UP_SCREEN) {
+						popUpTo(FoodifyDestination.Welcome.WELCOME_SCREEN) {
 							saveState = false
 						}
 						
@@ -1431,7 +1640,7 @@ fun SignInScreen(
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun ForgotPasswordScreen(
-	navController: NavHostController
+	welcomeNavController: NavHostController
 ) {
 	var email by remember { mutableStateOf("") }
 	
@@ -1502,8 +1711,8 @@ fun ForgotPasswordScreen(
 				)
 			),
 			onClick = {
-				navController.navigate(FoodifyDestination.WelcomeDestination.RESET_PASSWORD_SCREEN) {
-					popUpTo(FoodifyDestination.WelcomeDestination.SIGN_IN_SCREEN) {
+				welcomeNavController.navigate(FoodifyDestination.Welcome.RESET_PASSWORD_SCREEN) {
+					popUpTo(FoodifyDestination.Welcome.SIGN_IN_SCREEN) {
 						saveState = false
 					}
 					
@@ -1531,10 +1740,8 @@ fun ForgotPasswordScreen(
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun ResetPasswordScreen(
-	navController: NavHostController
+	welcomeNavController: NavHostController
 ) {
-	
-	val context = LocalContext.current
 	
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
@@ -1593,8 +1800,8 @@ fun ResetPasswordScreen(
 				)
 			),
 			onClick = {
-				navController.navigate(FoodifyDestination.WelcomeDestination.SIGN_IN_SCREEN) {
-					popUpTo(FoodifyDestination.WelcomeDestination.MAIN_WELCOME_SCREEN) {
+				welcomeNavController.navigate(FoodifyDestination.Welcome.SIGN_IN_SCREEN) {
+					popUpTo(FoodifyDestination.Welcome.WELCOME_SCREEN) {
 						saveState = false
 					}
 					

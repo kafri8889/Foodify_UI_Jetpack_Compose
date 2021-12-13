@@ -12,9 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.anafthdev.foodify.data.FoodifyDestination
-import com.anafthdev.foodify.ui.HomeScreen
-import com.anafthdev.foodify.ui.SplashScreen
-import com.anafthdev.foodify.ui.WelcomeScreen
+import com.anafthdev.foodify.ui.*
 import com.anafthdev.foodify.ui.theme.FoodifyTheme
 
 class MainActivity : ComponentActivity() {
@@ -39,7 +37,9 @@ class MainActivity : ComponentActivity() {
 			startDestination = FoodifyDestination.SPLASH_SCREEN
 		) {
 			composable(FoodifyDestination.SPLASH_SCREEN) {
-				SplashScreen(navController = navigationController)
+				SplashScreen(
+					navController = navigationController
+				)
 			}
 			
 			composable(FoodifyDestination.WELCOME_SCREEN) {
@@ -48,8 +48,16 @@ class MainActivity : ComponentActivity() {
 				)
 			}
 			
+			composable(FoodifyDestination.PAYMENT_SCREEN) {
+				PaymentScreen(
+					navController = navigationController
+				)
+			}
+			
 			composable(FoodifyDestination.HOME_SCREEN) {
-				HomeScreen()
+				HomeScreen(
+					navController = navigationController
+				)
 			}
 		}
 	}

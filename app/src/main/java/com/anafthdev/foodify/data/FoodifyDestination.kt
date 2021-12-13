@@ -8,9 +8,11 @@ object FoodifyDestination {
 	
 	const val HOME_SCREEN = "Home Screen"
 	
-	object WelcomeDestination {
+	const val PAYMENT_SCREEN = "Payment Screen"
+	
+	object Welcome {
 		
-		const val MAIN_WELCOME_SCREEN = "Main Welcome Screen"
+		const val WELCOME_SCREEN = "Welcome Screen"
 		
 		const val SIGN_UP_SCREEN = "Sign-up Screen"
 		
@@ -21,10 +23,21 @@ object FoodifyDestination {
 		const val RESET_PASSWORD_SCREEN = "Reset Password Screen"
 	}
 	
-	object HomeDestination {
+	object Home {
 		
-		const val MAIN_HOME_SCREEN = "Main Home Screen"
+		const val HOME_SCREEN = "Home Screen"
 		
 		const val FOOD_DETAIL_SCREEN = "Food Detail Screen"
+		
+		const val FOOD_CART_SCREEN = "Food Cart Screen"
+	}
+	
+	object Payment {
+		
+		const val PAYMENT_SCREEN = "Food Payment Screen"
+		
+		const val CREDIT_CARD_PAYMENT_SCREEN = "Credit Card Payment Screen"
+		
+		const val COMPLETE_PAYMENT_SCREEN = "Complete Payment Screen"
 	}
 }

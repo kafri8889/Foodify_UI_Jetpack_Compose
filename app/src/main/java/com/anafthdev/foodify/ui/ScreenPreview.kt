@@ -3,6 +3,7 @@ package com.anafthdev.foodify.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -704,7 +705,7 @@ fun ResetPasswordScreenPreview() {
 
 
 @OptIn(ExperimentalUnitApi::class)
-@Preview(showSystemUi = true)
+//@Preview(showSystemUi = true)
 @Composable
 fun HomeScreenPreview() {
 	
@@ -954,7 +955,7 @@ fun HomeScreenPreview() {
 
 
 @OptIn(ExperimentalUnitApi::class)
-@Preview(showSystemUi = true)
+//@Preview(showSystemUi = true)
 @Composable
 fun FoodDetailScreen() {
 	
@@ -987,7 +988,7 @@ fun FoodDetailScreen() {
 					modifier = Modifier.fillMaxSize()
 				) {
 					Image(
-						painter = painterResource(id = food.icon),
+						painter = painterResource(id = food.image),
 						contentDescription = null,
 						modifier = Modifier
 							.size(160.dp)
@@ -1212,6 +1213,80 @@ fun FoodDetailScreen() {
 					fontSize = TextUnit(14f, TextUnitType.Sp),
 					fontWeight = FontWeight.Bold
 				)
+			)
+		}
+	}
+}
+
+
+
+
+
+@OptIn(ExperimentalUnitApi::class)
+@Preview(showSystemUi = true)
+@Composable
+fun FoodCartScreenPreview() {
+	
+	val foods = listOf(
+		Food.sample.copy(),
+		Food.sample.copy(),
+		Food.sample.copy(),
+		Food.sample.copy(),
+	)
+	
+	Column(
+		modifier = Modifier
+			.fillMaxSize()
+	) {
+	
+		Text(
+			text = "Your cart",
+			style = typographyDmSans().body1.copy(
+				color = black.copy(alpha = 0.8f),
+				fontWeight = FontWeight.Bold,
+				fontSize = TextUnit(24f, TextUnitType.Sp)
+			),
+			modifier = Modifier
+				.padding(top = 32.dp, start = 16.dp)
+		)
+		
+		LazyColumn(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 24.dp)
+		) {
+			items(foods) { food ->
+				FoodCartItem(
+					food = food,
+					onPriceChange = {}
+				)
+			}
+		}
+		
+		Box(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(top = 32.dp, start = 32.dp, end = 32.dp)
+		) {
+			Text(
+				text = "Total",
+				style = typographySkModernist().body1.copy(
+					color = black.copy(0.8f),
+					fontSize = TextUnit(16f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.align(Alignment.CenterStart)
+			)
+			
+			Text(
+				text = "$345",
+				style = typographyDmSans().body1.copy(
+					color = black.copy(0.8f),
+					fontWeight = FontWeight.Bold,
+					fontSize = TextUnit(24f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.align(Alignment.CenterEnd)
 			)
 		}
 	}
