@@ -1,4 +1,4 @@
-package com.anafthdev.foodify.ui
+package com.anafthdev.foodify.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

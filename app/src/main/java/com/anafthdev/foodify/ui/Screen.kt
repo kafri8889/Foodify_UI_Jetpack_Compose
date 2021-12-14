@@ -22,8 +22,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -32,6 +36,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -47,6 +52,8 @@ import com.anafthdev.foodify.data.FoodifyDestination
 import com.anafthdev.foodify.model.Food
 import com.anafthdev.foodify.model.FoodCategory
 import com.anafthdev.foodify.model.Topping
+import com.anafthdev.foodify.ui.components.CircularCheckbox
+import com.anafthdev.foodify.ui.components.OTPField
 import com.anafthdev.foodify.ui.theme.*
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -898,7 +905,27 @@ fun PaymentScreen(
 	
 	Scaffold(
 		topBar = {
-		
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.height(56.dp)
+					.background(background)
+			) {
+				IconButton(
+					onClick = {
+						navController.navigate(FoodifyDestination.HOME_SCREEN) {
+							popUpTo(0)
+						}
+					},
+					modifier = Modifier
+						.padding(12.dp)
+				) {
+					Icon(
+						painter = painterResource(id = R.drawable.ic_left_arrow),
+						contentDescription = null
+					)
+				}
+			}
 		}
 	) {
 		NavHost(
@@ -914,11 +941,203 @@ fun PaymentScreen(
 	}
 }
 
+@OptIn(ExperimentalUnitApi::class)
 @Composable
 fun MainPaymentScreen(
 	paymentNavController: NavHostController
 ) {
-
+	val paymentMethod = listOf(
+		R.drawable.mastercard,
+		R.drawable.paypal,
+		R.drawable.stripe
+	)
+	
+	var selectedPayment by remember { mutableStateOf(-1) }
+	var isPayOnArrival by remember { mutableStateOf(false) }
+	
+	Column(
+		modifier = Modifier
+			.fillMaxSize()
+			.background(background)
+	) {
+		
+		Text(
+			text = "Delivery method",
+			style = typographyDmSans().body1.copy(
+				color = black.copy(alpha = 0.8f),
+				fontWeight = FontWeight.Bold,
+				fontSize = TextUnit(24f, TextUnitType.Sp)
+			),
+			modifier = Modifier
+				.padding(top = 32.dp, start = 24.dp)
+		)
+		
+		
+		
+		// Address
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 32.dp, start = 24.dp, end = 24.dp)
+		) {
+			Text(
+				text = "137 Teaticket Hwy, East Falmouth MA 2536",
+				maxLines = 2,
+				overflow = TextOverflow.Ellipsis,
+				style = typographyDmSans().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontSize = TextUnit(14f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.weight(1f)
+			)
+			
+			TransparentButton(
+				onClick = {}
+			) {
+				Text(
+					text = "Change",
+					style = typographySkModernist().body1.copy(
+						color = orange,
+						fontWeight = FontWeight.Bold,
+						fontSize = TextUnit(14f, TextUnitType.Sp)
+					)
+				)
+			}
+		}
+		
+		
+		
+		// Phone number
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 24.dp, start = 24.dp, end = 24.dp)
+		) {
+			Text(
+				text = "+234 9011039271",
+				maxLines = 1,
+				overflow = TextOverflow.Ellipsis,
+				style = typographyDmSans().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontSize = TextUnit(14f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.weight(1f)
+			)
+			
+			TransparentButton(
+				onClick = {}
+			) {
+				Text(
+					text = "Change",
+					style = typographySkModernist().body1.copy(
+						color = orange,
+						fontWeight = FontWeight.Bold,
+						fontSize = TextUnit(14f, TextUnitType.Sp)
+					)
+				)
+			}
+		}
+		
+		
+		
+		Text(
+			text = "Payment",
+			style = typographyDmSans().body1.copy(
+				color = black.copy(alpha = 0.8f),
+				fontWeight = FontWeight.Bold,
+				fontSize = TextUnit(24f, TextUnitType.Sp)
+			),
+			modifier = Modifier
+				.padding(top = 32.dp, start = 24.dp, end = 24.dp)
+		)
+		
+		
+		
+		LazyRow(
+			modifier = Modifier
+				.padding(top = 24.dp, start = 24.dp, end = 24.dp)
+		) {
+			
+			item {
+				IconButton(
+					onClick = {},
+					modifier = Modifier
+						.size(64.dp)
+						.padding(8.dp)
+						.drawBehind {
+							drawRoundRect(
+								color = Color.Gray,
+								cornerRadius = CornerRadius(100f, 100f),
+								style = Stroke(
+									width = 2f,
+									pathEffect = PathEffect.dashPathEffect(
+										floatArrayOf(10f, 10f),
+										0f
+									)
+								)
+							)
+						}
+				) {
+					Icon(
+						imageVector = Icons.Rounded.Add,
+						contentDescription = null
+					)
+				}
+			}
+			
+			itemsIndexed(paymentMethod) { i, item ->
+				IconButton(
+					onClick = {
+						selectedPayment = i
+					},
+					modifier = Modifier
+						.size(64.dp)
+						.padding(8.dp)
+						.clip(RoundedCornerShape(16.dp))
+						.background(white)
+						.border(
+							if (selectedPayment != -1) {
+								if (selectedPayment == i) BorderStroke(1.dp, orange)
+								else BorderStroke(1.dp, Color.Transparent)
+							} else BorderStroke(1.dp, Color.Transparent)
+						)
+				) {
+					Image(
+						painter = painterResource(id = item),
+						contentDescription = null,
+						modifier = Modifier
+							.size(32.dp)
+					)
+				}
+			}
+		}
+		
+		
+		
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 24.dp, start = 24.dp, end = 24.dp)
+				.clip(RoundedCornerShape(16.dp))
+				.background(white)
+		) {
+			CircularCheckbox(
+				checked = isPayOnArrival,
+				onCheckedChange = { mIsPayOnArrival ->
+					isPayOnArrival = mIsPayOnArrival
+				},
+				modifier = Modifier
+					.padding(start = 14.dp, top = 8.dp, bottom = 8.dp)
+					.clip(RoundedCornerShape(100))
+			)
+		}
+		
+	}
 }
 
 

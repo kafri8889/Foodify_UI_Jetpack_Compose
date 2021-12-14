@@ -1,15 +1,12 @@
 package com.anafthdev.foodify.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -17,15 +14,16 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -34,17 +32,21 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.anafthdev.foodify.R
 import com.anafthdev.foodify.data.FoodifyBottomNavigation
 import com.anafthdev.foodify.model.Food
 import com.anafthdev.foodify.model.FoodCategory
 import com.anafthdev.foodify.model.Topping
+import com.anafthdev.foodify.ui.components.CircularCheckbox
+import com.anafthdev.foodify.ui.components.OTPField
 import com.anafthdev.foodify.ui.theme.*
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -1223,7 +1225,7 @@ fun FoodDetailScreen() {
 
 
 @OptIn(ExperimentalUnitApi::class)
-@Preview(showSystemUi = true)
+//@Preview(showSystemUi = true)
 @Composable
 fun FoodCartScreenPreview() {
 	
@@ -1289,5 +1291,203 @@ fun FoodCartScreenPreview() {
 					.align(Alignment.CenterEnd)
 			)
 		}
+	}
+}
+
+
+
+
+
+@OptIn(ExperimentalUnitApi::class)
+@Preview(showSystemUi = true)
+@Composable
+fun MainPaymentScreenPreview() {
+	
+	val paymentMethod = listOf(
+		R.drawable.mastercard,
+		R.drawable.paypal,
+		R.drawable.stripe
+	)
+	
+	var selectedPayment by remember { mutableStateOf(-1) }
+	
+	Column(
+		modifier = Modifier
+			.fillMaxSize()
+			.background(background)
+	) {
+		
+		Text(
+			text = "Delivery method",
+			style = typographyDmSans().body1.copy(
+				color = black.copy(alpha = 0.8f),
+				fontWeight = FontWeight.Bold,
+				fontSize = TextUnit(24f, TextUnitType.Sp)
+			),
+			modifier = Modifier
+				.padding(top = 32.dp, start = 24.dp)
+		)
+		
+		
+		
+		// Address
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 32.dp, start = 24.dp, end = 24.dp)
+		) {
+			Text(
+				text = "137 Teaticket Hwy, East Falmouth MA 2536",
+				maxLines = 2,
+				overflow = TextOverflow.Ellipsis,
+				style = typographyDmSans().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontSize = TextUnit(14f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.weight(1f)
+			)
+			
+			TransparentButton(
+				onClick = {}
+			) {
+				Text(
+					text = "Change",
+					style = typographySkModernist().body1.copy(
+						color = orange,
+						fontWeight = FontWeight.Bold,
+						fontSize = TextUnit(14f, TextUnitType.Sp)
+					)
+				)
+			}
+		}
+		
+		
+		
+		// Phone number
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 24.dp, start = 24.dp, end = 24.dp)
+		) {
+			Text(
+				text = "+234 9011039271",
+				maxLines = 1,
+				overflow = TextOverflow.Ellipsis,
+				style = typographyDmSans().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontSize = TextUnit(14f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.weight(1f)
+			)
+			
+			TransparentButton(
+				onClick = {}
+			) {
+				Text(
+					text = "Change",
+					style = typographySkModernist().body1.copy(
+						color = orange,
+						fontWeight = FontWeight.Bold,
+						fontSize = TextUnit(14f, TextUnitType.Sp)
+					)
+				)
+			}
+		}
+		
+		
+		
+		Text(
+			text = "Payment",
+			style = typographyDmSans().body1.copy(
+				color = black.copy(alpha = 0.8f),
+				fontWeight = FontWeight.Bold,
+				fontSize = TextUnit(24f, TextUnitType.Sp)
+			),
+			modifier = Modifier
+				.padding(top = 32.dp, start = 24.dp, end = 24.dp)
+		)
+		
+		
+		
+		LazyRow(
+			modifier = Modifier
+				.padding(top = 24.dp, start = 24.dp, end = 24.dp)
+		) {
+			
+			item {
+				IconButton(
+					onClick = {},
+					modifier = Modifier
+						.size(64.dp)
+						.padding(8.dp)
+						.drawBehind {
+							drawRoundRect(
+								color = Color.Gray,
+								cornerRadius = CornerRadius(100f, 100f),
+								style = Stroke(
+									width = 2f,
+									pathEffect = PathEffect.dashPathEffect(
+										floatArrayOf(10f, 10f),
+										0f
+									)
+								)
+							)
+						}
+				) {
+					Icon(
+						imageVector = Icons.Rounded.Add,
+						contentDescription = null
+					)
+				}
+			}
+			
+			itemsIndexed(paymentMethod) { i, item ->
+				IconButton(
+					onClick = {},
+					modifier = Modifier
+						.size(64.dp)
+						.padding(8.dp)
+						.clip(RoundedCornerShape(16.dp))
+						.background(white)
+						.border(
+							if (selectedPayment != -1) {
+								if (selectedPayment == i) BorderStroke(1.dp, orange)
+								else BorderStroke(1.dp, Color.Transparent)
+							} else BorderStroke(1.dp, Color.Transparent)
+						)
+				) {
+					Image(
+						painter = painterResource(id = item),
+						contentDescription = null,
+						modifier = Modifier
+							.size(32.dp)
+					)
+				}
+			}
+		}
+		
+		
+		
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 24.dp, start = 24.dp, end = 24.dp)
+				.clip(RoundedCornerShape(16.dp))
+				.background(white)
+		) {
+			CircularCheckbox(
+				checked = true,
+				onCheckedChange = {},
+				modifier = Modifier
+					.padding(start = 14.dp, top = 8.dp, bottom = 8.dp)
+					.clip(RoundedCornerShape(100))
+			)
+		}
+		
 	}
 }
