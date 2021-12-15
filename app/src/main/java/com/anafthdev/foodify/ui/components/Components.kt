@@ -1,6 +1,9 @@
-package com.anafthdev.foodify.ui
+package com.anafthdev.foodify.ui.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -27,15 +31,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.ExperimentalUnitApi
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import com.anafthdev.foodify.R
+import com.anafthdev.foodify.model.Drawer
 import com.anafthdev.foodify.model.Food
 import com.anafthdev.foodify.model.FoodCategory
 import com.anafthdev.foodify.model.Topping
 import com.anafthdev.foodify.ui.theme.*
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -486,173 +490,266 @@ fun ToppingMenuPreview() {
 @Composable
 fun FoodCartItem(
 	food: Food,
+	actionRowContent: @Composable BoxScope.() -> Unit,
 	onPriceChange: (Double) -> Unit
 ) {
 	
-	var count by remember { mutableStateOf(1) }
+	val scope = rememberCoroutineScope()
 	
+	val offsetX = remember { Animatable(0f) }
+	
+	var count by remember { mutableStateOf(1) }
 	var currentPrice by remember { mutableStateOf(food.price) }
 	
-	Card(
-		elevation = 0.4f.dp,
-		shape = RoundedCornerShape(30),
-		backgroundColor = white,
-		onClick = {},
+	
+	Box(
 		modifier = Modifier
 			.fillMaxWidth()
 			.padding(16.dp)
 	) {
-		Box(
+		actionRowContent()
+		
+		Card(
+			elevation = 0.4f.dp,
+			shape = RoundedCornerShape(30),
+			backgroundColor = white,
+			onClick = {},
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 16.dp)
-		) {
-			
-			Card(
-				elevation = 0.2f.dp,
-				shape = RoundedCornerShape(30),
-				modifier = Modifier
-					.size(64.dp)
-					.padding(8.dp)
-					.align(Alignment.CenterStart)
-			) {
-				Box(
-					contentAlignment = Alignment.Center,
-					modifier = Modifier
-						.fillMaxSize()
-				) {
-					Image(
-						painter = painterResource(id = food.image),
-						contentDescription = null,
-						modifier = Modifier
-							.size(32.dp)
+				.offset {
+					IntOffset(offsetX.value.roundToInt(), 0)
+				}
+				.pointerInput(Unit) {
+					detectDragGestures(
+						onDragEnd = {
+							scope.launch {
+								offsetX.animateTo(
+									targetValue = 0f,
+									animationSpec = tween(
+										durationMillis = 800,
+										delayMillis = 800
+									)
+								)
+							}
+						},
+						onDrag = { _, dragAmount ->
+							scope.launch { offsetX.snapTo(offsetX.value + dragAmount.x) }
+						}
 					)
 				}
-			}
-			
-			
-			
-			Column(
+		) {
+			Box(
 				modifier = Modifier
-					.align(Alignment.Center)
+					.fillMaxWidth()
+					.padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 16.dp)
 			) {
-				Text(
-					text = food.name,
-					maxLines = 1,
-					overflow = TextOverflow.Ellipsis,
-					style = typographyDmSans().body1.copy(
-						color = black.copy(alpha = 0.8f),
-						fontWeight = FontWeight.SemiBold,
-						fontSize = TextUnit(16f, TextUnitType.Sp)
-					)
-				)
 				
-				Text(
-					text = food.type,
-					overflow = TextOverflow.Ellipsis,
-					style = typographyDmSans().body1.copy(
-						color = black.copy(alpha = 0.8f),
-						fontWeight = FontWeight.Normal,
-						fontSize = TextUnit(12f, TextUnitType.Sp)
-					),
+				Card(
+					elevation = 0.2f.dp,
+					shape = RoundedCornerShape(30),
 					modifier = Modifier
-						.padding(top = 2.dp, bottom = 2.dp)
-				)
+						.size(64.dp)
+						.padding(8.dp)
+						.align(Alignment.CenterStart)
+				) {
+					Box(
+						contentAlignment = Alignment.Center,
+						modifier = Modifier
+							.fillMaxSize()
+					) {
+						Image(
+							painter = painterResource(id = food.image),
+							contentDescription = null,
+							modifier = Modifier
+								.size(32.dp)
+						)
+					}
+				}
 				
-				Text(
-					text = run {
-						if (currentPrice.toString().length > 6) {
-							"$${currentPrice.toString().substring(0, 6)}"
-						} else "$$currentPrice"
-					},
-					overflow = TextOverflow.Ellipsis,
-					style = typographyDmSans().body1.copy(
-						color = orange.copy(alpha = 0.8f),
-						fontWeight = FontWeight.SemiBold,
-						fontSize = TextUnit(16f, TextUnitType.Sp)
+				
+				
+				Column(
+					modifier = Modifier
+						.align(Alignment.Center)
+				) {
+					Text(
+						text = food.name,
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis,
+						style = typographyDmSans().body1.copy(
+							color = black.copy(alpha = 0.8f),
+							fontWeight = FontWeight.SemiBold,
+							fontSize = TextUnit(16f, TextUnitType.Sp)
+						)
 					)
-				)
-			}
-			
-			
-			
-			Row(
-				verticalAlignment = Alignment.CenterVertically,
-				modifier = Modifier
-					.align(Alignment.CenterEnd)
-			) {
+					
+					Text(
+						text = food.type,
+						overflow = TextOverflow.Ellipsis,
+						style = typographyDmSans().body1.copy(
+							color = black.copy(alpha = 0.8f),
+							fontWeight = FontWeight.Normal,
+							fontSize = TextUnit(12f, TextUnitType.Sp)
+						),
+						modifier = Modifier
+							.padding(top = 2.dp, bottom = 2.dp)
+					)
+					
+					Text(
+						text = run {
+							if (currentPrice.toString().length > 6) {
+								"$${currentPrice.toString().substring(0, 6)}"
+							} else "$$currentPrice"
+						},
+						overflow = TextOverflow.Ellipsis,
+						style = typographyDmSans().body1.copy(
+							color = orange.copy(alpha = 0.8f),
+							fontWeight = FontWeight.SemiBold,
+							fontSize = TextUnit(16f, TextUnitType.Sp)
+						)
+					)
+				}
 				
-				FloatingActionButton(
-					shape = RoundedCornerShape(100),
-					backgroundColor = orange.copy(alpha = 0.8f),
-					elevation = FloatingActionButtonDefaults.elevation(
-						defaultElevation = 0.dp
-					),
-					onClick = {
-						if (count > 1) {
-							count -= 1
+				
+				
+				Row(
+					verticalAlignment = Alignment.CenterVertically,
+					modifier = Modifier
+						.align(Alignment.CenterEnd)
+				) {
+					
+					FloatingActionButton(
+						shape = RoundedCornerShape(100),
+						backgroundColor = orange.copy(alpha = 0.8f),
+						elevation = FloatingActionButtonDefaults.elevation(
+							defaultElevation = 0.dp
+						),
+						onClick = {
+							if (count > 1) {
+								count -= 1
+								currentPrice = food.price * count
+								onPriceChange(currentPrice)
+							}
+						},
+						modifier = Modifier
+							.size(24.dp)
+					) {
+						Icon(
+							painter = painterResource(id = R.drawable.ic_horizontal_rule_rounded),
+							contentDescription = null,
+							tint = white,
+							modifier = Modifier
+								.size(16.dp)
+						)
+					}
+					
+					Text(
+						text = count.toString(),
+						style = typographyDmSans().body1.copy(
+							color = black.copy(alpha = 0.8f),
+							fontWeight = FontWeight.SemiBold,
+							fontSize = TextUnit(16f, TextUnitType.Sp)
+						),
+						modifier = Modifier
+							.padding(start = 8.dp, end = 8.dp)
+					)
+					
+					FloatingActionButton(
+						shape = RoundedCornerShape(100),
+						backgroundColor = orange.copy(alpha = 0.8f),
+						elevation = FloatingActionButtonDefaults.elevation(
+							defaultElevation = 0.dp
+						),
+						onClick = {
+							count += 1
 							currentPrice = food.price * count
 							onPriceChange(currentPrice)
-						}
-					},
-					modifier = Modifier
-						.size(24.dp)
-				) {
-					Icon(
-						painter = painterResource(id = R.drawable.ic_horizontal_rule_rounded),
-						contentDescription = null,
-						tint = white,
+						},
 						modifier = Modifier
-							.size(16.dp)
-					)
+							.size(24.dp)
+					) {
+						Icon(
+							imageVector = Icons.Rounded.Add,
+							contentDescription = null,
+							tint = white,
+							modifier = Modifier
+								.size(16.dp)
+						)
+					}
 				}
 				
-				Text(
-					text = count.toString(),
-					style = typographyDmSans().body1.copy(
-						color = black.copy(alpha = 0.8f),
-						fontWeight = FontWeight.SemiBold,
-						fontSize = TextUnit(16f, TextUnitType.Sp)
-					),
-					modifier = Modifier
-						.padding(start = 8.dp, end = 8.dp)
-				)
 				
-				FloatingActionButton(
-					shape = RoundedCornerShape(100),
-					backgroundColor = orange.copy(alpha = 0.8f),
-					elevation = FloatingActionButtonDefaults.elevation(
-						defaultElevation = 0.dp
-					),
-					onClick = {
-						count += 1
-						currentPrice = food.price * count
-						onPriceChange(currentPrice)
-					},
-					modifier = Modifier
-						.size(24.dp)
-				) {
-					Icon(
-						imageVector = Icons.Rounded.Add,
-						contentDescription = null,
-						tint = white,
-						modifier = Modifier
-							.size(16.dp)
-					)
-				}
+				
 			}
-			
-			
-			
 		}
 	}
 }
 
-@Preview
+//@Preview
 @Composable
 fun FoodCartItemPreview() {
 	FoodCartItem(
 		food = Food.sample,
+		actionRowContent = {},
 		onPriceChange = {}
 	)
+}
+
+
+
+
+
+@OptIn(ExperimentalUnitApi::class)
+@Composable
+fun DrawerItem(
+	drawer: Drawer,
+	paddingValues: PaddingValues = PaddingValues(top = 12.dp, bottom = 12.dp),
+	onClick: () -> Unit
+) {
+	
+	Row(
+		verticalAlignment = Alignment.CenterVertically,
+		modifier = Modifier
+			.fillMaxWidth()
+			.clip(RoundedCornerShape(16.dp))
+			.clickable(onClick = onClick)
+			.padding(
+				top = paddingValues.calculateTopPadding(),
+				bottom = paddingValues.calculateBottomPadding(),
+				start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+				end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+			)
+	) {
+		
+		Icon(
+			painter = painterResource(id = drawer.resId),
+			tint = black,
+			contentDescription = null,
+			modifier = Modifier
+				.size(24.dp)
+		)
+		
+		Text(
+			text = drawer.name,
+			style = typographySkModernist().body1.copy(
+				color = black.copy(alpha = 0.8f),
+				fontSize = TextUnit(14f, TextUnitType.Sp)
+			),
+			modifier = Modifier
+				.padding(start = 8.dp)
+		)
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DrawerItemPreview() {
+	Column {
+		Drawer.values.forEach { drawer ->
+			DrawerItem(
+				drawer = drawer,
+				onClick = {}
+			)
+		}
+	}
 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -25,28 +26,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.anafthdev.foodify.R
 import com.anafthdev.foodify.data.FoodifyBottomNavigation
+import com.anafthdev.foodify.model.Drawer
 import com.anafthdev.foodify.model.Food
 import com.anafthdev.foodify.model.FoodCategory
 import com.anafthdev.foodify.model.Topping
-import com.anafthdev.foodify.ui.components.CircularCheckbox
-import com.anafthdev.foodify.ui.components.OTPField
+import com.anafthdev.foodify.ui.components.*
 import com.anafthdev.foodify.ui.theme.*
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -54,27 +55,87 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import java.util.concurrent.TimeUnit
 
-//@Preview(showSystemUi = true)
+@OptIn(ExperimentalUnitApi::class)
+@Preview(showSystemUi = true)
 @Composable
-fun SplashScreenPreview() {
-	Column(
-		horizontalAlignment = Alignment.CenterHorizontally,
-		verticalArrangement = Arrangement.Center,
+fun HomeDrawerPreview() {
+	
+	Box(
 		modifier = Modifier
 			.fillMaxSize()
 	) {
-		Image(
-			painter = painterResource(id = R.drawable.ic_foodify_logo),
-			contentDescription = null,
+		Column {
+			
+			Image(
+				painter = painterResource(id = R.drawable.image_profile),
+				contentDescription = null,
+				modifier = Modifier
+					.size(142.dp)
+					.padding(top = 32.dp, start = 32.dp, end = 32.dp, bottom = 24.dp)
+			)
+			
+			Text(
+				text = "Marvis Ighedosa",
+				style = typographyDmSans().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontWeight = FontWeight.Bold,
+					fontSize = TextUnit(16f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.padding(start = 24.dp)
+			)
+			
+			Text(
+				text = "dosamarvis@gmail.com",
+				style = typographySkModernist().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontWeight = FontWeight.Normal,
+					fontSize = TextUnit(14f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.padding(start = 24.dp, top = 8.dp)
+			)
+			
+			Column(
+				modifier = Modifier
+					.padding(start = 24.dp, top = 32.dp)
+			) {
+				Drawer.values.forEach { drawer ->
+					DrawerItem(
+						drawer = drawer,
+						onClick = {}
+					)
+				}
+			}
+		}
+		
+		GradientButton(
+			shape = RoundedCornerShape(18.dp),
+			contentPadding = PaddingValues(),
+			brush = Brush.horizontalGradient(
+				colors = listOf(
+					Color(0xFFF9881F),
+					Color(0xFFFF774C),
+				)
+			),
+			onClick = {},
 			modifier = Modifier
-				.size(100.dp, 67.dp)
-		)
+				.width(128.dp)
+				.padding(bottom = 32.dp, start = 24.dp)
+				.height(48.dp)
+				.align(Alignment.BottomStart)
+		) {
+			Text(
+				text = "Log out",
+				style = typographySkModernist().body1.copy(
+					color = white,
+					fontSize = TextUnit(14f, TextUnitType.Sp),
+					fontWeight = FontWeight.Bold
+				)
+			)
+		}
 	}
 }
-
-
-
-
 
 @OptIn(
 	ExperimentalUnitApi::class,
@@ -1260,6 +1321,7 @@ fun FoodCartScreenPreview() {
 			items(foods) { food ->
 				FoodCartItem(
 					food = food,
+					actionRowContent = {},
 					onPriceChange = {}
 				)
 			}
@@ -1299,7 +1361,7 @@ fun FoodCartScreenPreview() {
 
 
 @OptIn(ExperimentalUnitApi::class)
-@Preview(showSystemUi = true)
+//@Preview(showSystemUi = true)
 @Composable
 fun MainPaymentScreenPreview() {
 	
@@ -1309,7 +1371,7 @@ fun MainPaymentScreenPreview() {
 		R.drawable.stripe
 	)
 	
-	var selectedPayment by remember { mutableStateOf(-1) }
+	var selectedPayment by remember { mutableStateOf(1) }
 	
 	Column(
 		modifier = Modifier
@@ -1422,7 +1484,7 @@ fun MainPaymentScreenPreview() {
 				IconButton(
 					onClick = {},
 					modifier = Modifier
-						.size(64.dp)
+						.size(72.dp)
 						.padding(8.dp)
 						.drawBehind {
 							drawRoundRect(
@@ -1449,16 +1511,17 @@ fun MainPaymentScreenPreview() {
 				IconButton(
 					onClick = {},
 					modifier = Modifier
-						.size(64.dp)
+						.size(72.dp)
 						.padding(8.dp)
-						.clip(RoundedCornerShape(16.dp))
-						.background(white)
 						.border(
 							if (selectedPayment != -1) {
-								if (selectedPayment == i) BorderStroke(1.dp, orange)
+								if (selectedPayment == i) BorderStroke(2.dp, orange)
 								else BorderStroke(1.dp, Color.Transparent)
-							} else BorderStroke(1.dp, Color.Transparent)
+							} else BorderStroke(1.dp, Color.Transparent),
+							shape = RoundedCornerShape(16.dp)
 						)
+						.clip(RoundedCornerShape(16.dp))
+						.background(white)
 				) {
 					Image(
 						painter = painterResource(id = item),
@@ -1472,22 +1535,487 @@ fun MainPaymentScreenPreview() {
 		
 		
 		
+		// Pay on arrival
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 24.dp, start = 24.dp, end = 24.dp)
+		) {
+			Row(
+				verticalAlignment = Alignment.CenterVertically,
+				modifier = Modifier
+					.fillMaxWidth()
+					.clip(RoundedCornerShape(16.dp))
+					.background(white)
+			) {
+				CircularCheckbox(
+					checked = true,
+					onCheckedChange = {},
+					modifier = Modifier
+						.padding(start = 14.dp, top = 8.dp, bottom = 8.dp)
+						.clip(RoundedCornerShape(100))
+				)
+				
+				Text(
+					text = "Pay on arrival",
+					style = typographyDmSans().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontWeight = FontWeight.Normal,
+						fontSize = TextUnit(14f, TextUnitType.Sp)
+					)
+				)
+			}
+			
+			Text(
+				text = "Pay with cash/POS upon arrival ",
+				style = typographyDmSans().body1.copy(
+					color = orange,
+					fontWeight = FontWeight.Normal,
+					fontSize = TextUnit(12f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.padding(top = 16.dp)
+			)
+		}
+		
+		
+		
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 32.dp)
+		) {
+			
+			// Delivery fee
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(start = 24.dp, end = 24.dp)
+			) {
+				Text(
+					text = "Delivery Fee",
+					style = typographyDmSans().body1.copy(
+						color = black,
+						fontWeight = FontWeight.Normal,
+						fontSize = TextUnit(15f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.align(Alignment.CenterStart)
+				)
+				
+				Text(
+					text = "$20",
+					style = typographyDmSans().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontWeight = FontWeight.Normal,
+						fontSize = TextUnit(14f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.align(Alignment.CenterEnd)
+				)
+			}
+			
+			
+			
+			// Subtotal
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(top = 8.dp, bottom = 8.dp, start = 24.dp, end = 24.dp)
+			) {
+				Text(
+					text = "Subtotal",
+					style = typographyDmSans().body1.copy(
+						color = black,
+						fontWeight = FontWeight.Normal,
+						fontSize = TextUnit(15f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.align(Alignment.CenterStart)
+				)
+				
+				Text(
+					text = "$520",
+					style = typographyDmSans().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontWeight = FontWeight.Normal,
+						fontSize = TextUnit(14f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.align(Alignment.CenterEnd)
+				)
+			}
+			
+			
+			
+			Divider(
+				color = black.copy(alpha = 0.6f),
+				thickness = 1.dp,
+				modifier = Modifier
+					.fillMaxWidth()
+			)
+			
+			
+			
+			// Total
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(top = 8.dp, start = 24.dp, end = 24.dp, bottom = 32.dp)
+			) {
+				Text(
+					text = "Total",
+					style = typographyDmSans().body1.copy(
+						color = black,
+						fontWeight = FontWeight.Normal,
+						fontSize = TextUnit(15f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.align(Alignment.CenterStart)
+				)
+				
+				Text(
+					text = "$540",
+					style = typographyDmSans().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontWeight = FontWeight.Bold,
+						fontSize = TextUnit(24f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.align(Alignment.CenterEnd)
+				)
+			}
+		}
+		
+		
+		
+		GradientButton(
+			shape = RoundedCornerShape(18.dp),
+			contentPadding = PaddingValues(),
+			brush = Brush.horizontalGradient(
+				colors = listOf(
+					Color(0xFFF9881F),
+					Color(0xFFFF774C),
+				)
+			),
+			onClick = {},
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(bottom = 32.dp, start = 24.dp, end = 24.dp)
+				.height(48.dp)
+		) {
+			Text(
+				text = "Proceed to payment",
+				style = typographySkModernist().body1.copy(
+					color = white,
+					fontSize = TextUnit(14f, TextUnitType.Sp),
+					fontWeight = FontWeight.Bold
+				)
+			)
+		}
+	}
+}
+
+
+
+
+
+@OptIn(ExperimentalUnitApi::class)
+//@Preview(showSystemUi = true)
+@Composable
+fun CreditCardPaymentScreenPreview() {
+	
+	var cardDetails by remember { mutableStateOf("") }
+	
+	var expDate by remember { mutableStateOf("") }
+	
+	var cvv by remember { mutableStateOf("") }
+	
+	Column(
+		modifier = Modifier
+			.fillMaxSize()
+			.padding(start = 24.dp, end = 24.dp)
+	) {
+		
+		Text(
+			text = "Payment",
+			style = typographyDmSans().body1.copy(
+				color = black.copy(alpha = 0.8f),
+				fontWeight = FontWeight.Bold,
+				fontSize = TextUnit(24f, TextUnitType.Sp)
+			),
+			modifier = Modifier
+				.padding(top = 32.dp)
+		)
+		
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(top = 32.dp)
+		) {
+			Text(
+				text = "Card details",
+				style = typographySkModernist().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontWeight = FontWeight.Normal,
+					fontSize = TextUnit(12f, TextUnitType.Sp)
+				),
+				modifier = Modifier
+					.padding(start = 16.dp)
+			)
+			
+			OutlinedTextField(
+				value = cardDetails,
+				shape = RoundedCornerShape(16.dp),
+				singleLine = true,
+				colors = TextFieldDefaults.outlinedTextFieldColors(
+					backgroundColor = white,
+					unfocusedBorderColor = Color.Gray.copy(alpha = 0.8f),
+					focusedBorderColor = Color.Gray.copy(alpha = 0.8f)
+				),
+				onValueChange = { s ->
+					cardDetails = s
+				},
+				placeholder = {
+					Text(
+						text = "Enter card details",
+						style = typographySkModernist().body1.copy(
+							color = Color.Gray.copy(alpha = 0.8f),
+							fontSize = TextUnit(14f, TextUnitType.Sp)
+						)
+					)
+				},
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(top = 8.dp)
+					.border(
+						width = 1.dp,
+						color = Color.Gray,
+						shape = RoundedCornerShape(16.dp)
+					)
+			)
+		}
+		
+		
+		
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(top = 24.dp, start = 24.dp, end = 24.dp)
-				.clip(RoundedCornerShape(16.dp))
-				.background(white)
+				.padding(top = 24.dp)
 		) {
-			CircularCheckbox(
-				checked = true,
-				onCheckedChange = {},
+			
+			Column(
 				modifier = Modifier
-					.padding(start = 14.dp, top = 8.dp, bottom = 8.dp)
-					.clip(RoundedCornerShape(100))
+					.weight(1f)
+					.padding(end = 8.dp)
+			) {
+				Text(
+					text = "Exp date",
+					style = typographySkModernist().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontSize = TextUnit(12f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.padding(start = 16.dp, bottom = 8.dp)
+				)
+				
+				OutlinedTextField(
+					value = expDate,
+					shape = RoundedCornerShape(16.dp),
+					keyboardOptions = KeyboardOptions(
+						keyboardType = KeyboardType.Number,
+						imeAction = ImeAction.Next
+					),
+					colors = TextFieldDefaults.outlinedTextFieldColors(
+						backgroundColor = white,
+						unfocusedBorderColor = Color.Gray.copy(alpha = 0.8f),
+						focusedBorderColor = Color.Gray.copy(alpha = 0.8f)
+					),
+					placeholder = {
+						Text(
+							text = "DD/MM",
+							style = typographySkModernist().body1.copy(
+								color = Color.Gray.copy(alpha = 0.8f),
+								fontSize = TextUnit(14f, TextUnitType.Sp)
+							)
+						)
+					},
+					onValueChange = { s ->
+						expDate = if (s[s.length - 1].isDigit()) {
+							if (s.length == 2) "$s/" else s
+						} else s.substring(0, s.length - 2)
+					}
+				)
+			}
+			
+			Column(
+				modifier = Modifier
+					.weight(1f)
+					.padding(start = 8.dp)
+			) {
+				Text(
+					text = "CVV",
+					style = typographySkModernist().body1.copy(
+						color = black.copy(alpha = 0.8f),
+						fontSize = TextUnit(12f, TextUnitType.Sp)
+					),
+					modifier = Modifier
+						.padding(start = 16.dp, bottom = 8.dp)
+				)
+				
+				OutlinedTextField(
+					value = cvv,
+					shape = RoundedCornerShape(16.dp),
+					keyboardOptions = KeyboardOptions(
+						keyboardType = KeyboardType.Number,
+						imeAction = ImeAction.Next
+					),
+					colors = TextFieldDefaults.outlinedTextFieldColors(
+						backgroundColor = white,
+						unfocusedBorderColor = Color.Gray.copy(alpha = 0.8f),
+						focusedBorderColor = Color.Gray.copy(alpha = 0.8f)
+					),
+					placeholder = {
+						Text(
+							text = "CVV",
+							style = typographySkModernist().body1.copy(
+								color = Color.Gray.copy(alpha = 0.8f),
+								fontSize = TextUnit(14f, TextUnitType.Sp)
+							)
+						)
+					},
+					onValueChange = { s ->
+						if (s.length < 3) {
+							cvv = if (s[s.length - 1].isDigit()) {
+								if (s.length == 2) "$s/" else s
+							} else s.substring(0, s.length - 2)
+						}
+					}
+				)
+			}
+		}
+		
+		
+		
+		Spacer(
+			modifier = Modifier
+				.weight(1f)
+		)
+		
+		
+		
+		GradientButton(
+			shape = RoundedCornerShape(18.dp),
+			contentPadding = PaddingValues(),
+			brush = Brush.horizontalGradient(
+				colors = listOf(
+					Color(0xFFF9881F),
+					Color(0xFFFF774C),
+				)
+			),
+			onClick = {},
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(bottom = 32.dp)
+				.height(48.dp)
+		) {
+			Text(
+				text = "Pay now",
+				style = typographySkModernist().body1.copy(
+					color = white,
+					fontSize = TextUnit(14f, TextUnitType.Sp),
+					fontWeight = FontWeight.Bold
+				)
+			)
+		}
+	}
+}
+
+
+
+
+
+@OptIn(ExperimentalUnitApi::class)
+//@Preview(showSystemUi = true)
+@Composable
+fun CompletePaymentScreenPreview() {
+	
+	val localConfig = LocalConfiguration.current
+	
+	Box(
+		modifier = Modifier
+			.fillMaxSize()
+			.background(background)
+	) {
+		
+		Column(
+			horizontalAlignment = Alignment.CenterHorizontally,
+			verticalArrangement = Arrangement.Center,
+			modifier = Modifier
+				.fillMaxWidth()
+				.align(Alignment.Center)
+				.padding(bottom = 64.dp)
+		) {
+			Image(
+				painter = painterResource(id = R.drawable.ic_payment_success),
+				contentDescription = null,
+				modifier = Modifier
+					.size(
+						width = (localConfig.screenWidthDp / 2).dp,
+						height = (localConfig.screenWidthDp / 2).dp
+					)
+			)
+			
+			Text(
+				text = "Your order has been successfully placed",
+				style = typographyDmSans().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontWeight = FontWeight.Bold,
+					fontSize = TextUnit(24f, TextUnitType.Sp),
+					textAlign = TextAlign.Center
+				),
+				modifier = Modifier
+					.padding(start = 32.dp, end = 32.dp, top = 16.dp)
+			)
+			
+			Text(
+				text = "Sit and relax while your orders is being worked on . It’ll take 5min before you get it",
+				style = typographyDmSans().body1.copy(
+					color = black.copy(alpha = 0.8f),
+					fontWeight = FontWeight.Normal,
+					fontSize = TextUnit(15f, TextUnitType.Sp),
+					textAlign = TextAlign.Center
+				),
+				modifier = Modifier
+					.padding(start = 24.dp, end = 24.dp, top = 16.dp)
 			)
 		}
 		
+		GradientButton(
+			shape = RoundedCornerShape(18.dp),
+			contentPadding = PaddingValues(),
+			brush = Brush.horizontalGradient(
+				colors = listOf(
+					Color(0xFFF9881F),
+					Color(0xFFFF774C),
+				)
+			),
+			onClick = {},
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(bottom = 32.dp, start = 24.dp, end = 24.dp)
+				.height(48.dp)
+				.align(Alignment.BottomCenter)
+		) {
+			Text(
+				text = "Go back to home",
+				style = typographySkModernist().body1.copy(
+					color = white,
+					fontSize = TextUnit(14f, TextUnitType.Sp),
+					fontWeight = FontWeight.Bold
+				)
+			)
+		}
 	}
 }

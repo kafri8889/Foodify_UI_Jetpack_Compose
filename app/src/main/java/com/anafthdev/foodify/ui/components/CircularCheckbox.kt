@@ -8,9 +8,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.triStateToggleable
-import androidx.compose.material.*
+import androidx.compose.material.CheckboxColors
+import androidx.compose.material.CheckboxDefaults
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -295,5 +300,5 @@ private const val CheckAnimationDuration = 100
 
 private val CheckboxRippleRadius = 24.dp
 private val CheckboxDefaultPadding = 2.dp
-private val CheckboxSize = 24.dp
+private val CheckboxSize = 20.dp
 private val RadiusSize = 2.dp

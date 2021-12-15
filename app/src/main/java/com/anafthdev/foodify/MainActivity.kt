@@ -5,14 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.anafthdev.foodify.data.FoodifyDestination
-import com.anafthdev.foodify.ui.*
+import com.anafthdev.foodify.ui.HomeScreen
+import com.anafthdev.foodify.ui.PaymentScreen
+import com.anafthdev.foodify.ui.SplashScreen
+import com.anafthdev.foodify.ui.WelcomeScreen
 import com.anafthdev.foodify.ui.theme.FoodifyTheme
 
 class MainActivity : ComponentActivity() {

@@ -12,4 +12,4 @@ val black = Color(0xFF222222)
 val pure_black = Color(0xFF000000)
 val orange = Color(0xFFFA5A1E)
 
-val background = Color(0xFFF7FBFF)
+val background = Color(0xFFF8FBFF)
