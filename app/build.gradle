@@ -11,7 +11,7 @@ android {
         minSdk 24
         targetSdk 31
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -65,7 +65,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-insets:0.21.3-beta"
     implementation "com.google.accompanist:accompanist-flowlayout:0.21.3-beta"
 
-    testImplementation 'junit:junit:'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
